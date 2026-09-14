@@ -456,6 +456,10 @@ db.ref(`${ROOT}/posts`).on('value', snap=>{
   if(viewMode==="notif") renderNotif();
 });
 
+auth.getRedirectResult().catch(e=>{
+  if(e && e.code && e.code!=='auth/no-auth-event' ) alert("No se pudo iniciar sesión: "+e.message);
+});
+
 auth.onAuthStateChanged(user => {
   currentUser = user;
   if(!user){
@@ -968,7 +972,7 @@ function renderSettings(msg){
         </button>
       </div>`;
     document.getElementById('btn-login').onclick = () => {
-      auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>alert("No se pudo iniciar sesión: "+e.message));
+      auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider()).catch(e=>alert("No se pudo iniciar sesión: "+e.message));
     };
     return;
   }
