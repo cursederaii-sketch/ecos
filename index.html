@@ -290,17 +290,21 @@
   /* ---------- Layout de escritorio: 3 columnas al estilo X ---------- */
   .shell{display:block;}
   .dsidebar{display:none;}
-  @media (min-width:1050px){
+  @media (min-width:1150px){
     body{padding-bottom:0;}
-    .shell{display:flex;justify-content:center;align-items:flex-start;gap:28px;max-width:1280px;margin:0 auto;padding:0 16px;}
-    #app{margin:0;flex:none;box-shadow:none;}
+    .shell{display:flex;justify-content:center;align-items:flex-start;gap:24px;width:100%;padding:0 20px;box-sizing:border-box;}
+    #app{margin:0;flex:1 1 0%;max-width:640px;min-width:380px;box-shadow:none;}
     .dsidebar{display:flex;flex-direction:column;position:sticky;top:0;align-self:flex-start;height:100vh;padding:8px 4px;overflow-y:auto;scrollbar-width:none;}
     .dsidebar::-webkit-scrollbar{display:none;}
-    .dsidebar-left{width:255px;justify-content:space-between;}
-    .dsidebar-right{width:340px;gap:16px;padding-top:12px;}
+    .dsidebar-left{width:270px;flex:0 0 270px;justify-content:space-between;}
+    .dsidebar-right{width:350px;flex:0 0 350px;gap:16px;padding-top:12px;}
     .bottomnav,.fab{display:none;}
   }
-  @media (min-width:1300px){ .dsidebar-left{width:275px;} }
+  @media (min-width:1600px){
+    .dsidebar-left{width:300px;flex-basis:300px;}
+    .dsidebar-right{width:400px;flex-basis:400px;}
+    #app{max-width:700px;}
+  }
 
   .ds-top{display:flex;flex-direction:column;gap:6px;}
   .ds-logo{display:flex;align-items:center;gap:10px;padding:8px 14px 14px;}
@@ -520,7 +524,7 @@ const firebaseConfig = {
    que guarde la key del lado del servidor.
    ========================================================= */
 const GROQ_API_KEY = "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";
-const GROQ_MODEL = "llama-3.3-70b-versatile";
+const GROQ_MODEL = "openai/gpt-oss-120b";
 const ORACULO_SYSTEM_PROMPT = "Sos el Oráculo, el asistente de IA de ECOS, una red social. Hablás en español, con un tono cercano y directo. Tu función es ayudar a la gente a usar la aplicación (cómo publicar, subir fotos o banner, usar hashtags, chatear, editar su perfil, etc.), darles ideas para sus publicaciones, o simplemente charlar de lo que te pregunten. No formás parte de ningún universo de fantasía ni de hechiceros: ECOS es una red social común, como Twitter/X. Respondé de forma breve y útil.";
 
 /* ---------------- Multi-cuenta (hasta 3 en simultáneo) ----------------
