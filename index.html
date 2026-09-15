@@ -71,6 +71,15 @@
   .drawer-divider{height:1px;background:var(--border);margin:8px 0;}
   .drawer-login{width:100%;background:var(--grad);border:none;color:#fff;padding:12px;border-radius:999px;font-weight:700;margin-top:8px;}
 
+  /* ---------- ACCOUNT SWITCHER (multi-cuenta, max 3) ---------- */
+  .acc-switcher{display:flex;gap:12px;padding:4px 2px 18px;}
+  .acc-chip{position:relative;width:44px;height:44px;border-radius:50%;cursor:pointer;flex:none;padding:2px;border:2px solid transparent;}
+  .acc-chip img{width:100%;height:100%;}
+  .acc-chip.active{border-color:var(--purple);box-shadow:0 0 0 2px rgba(139,92,246,0.25);}
+  .acc-chip:not(.active):hover{border-color:var(--border);}
+  .acc-plus{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;color:var(--ink-dim);border:1px dashed var(--border);}
+  .acc-chip.acc-empty:hover .acc-plus{color:var(--purple);border-color:var(--purple);}
+
   .avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none;background:#1a1220;}
   .avatar.sm{width:32px;height:32px;}
   .avatar.xs{width:26px;height:26px;}
@@ -277,6 +286,45 @@
   .fab{position:fixed;bottom:76px;left:50%;transform:translateX(calc(-50% + 250px));width:54px;height:54px;border-radius:50%;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(139,92,246,0.4);z-index:19;border:none;}
   .fab svg{width:24px;height:24px;}
   @media (max-width:600px){ .fab{transform:translateX(calc(-50vw + 100% - 40px));right:16px;left:auto;} }
+
+  /* ---------- Pulido general de estética ---------- */
+  html{scroll-behavior:smooth;}
+  #app{box-shadow:0 0 80px rgba(139,92,246,0.05);}
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px;}
+  ::-webkit-scrollbar-thumb:hover{background:var(--purple);opacity:.6;}
+  .tab-btn,.pa-btn,.nav-btn,.who-row,.tag-row,.drawer-item,.chat-item,.edit-btn,
+  .profile-actions button,.btn-post,.btn-primary,.btn-secondary,.btn-google,
+  .tb-side,.composer-icons span,.oraculo-chip,.oraculo-conv-row,.post,.reply-box button{
+    transition:background-color .15s ease,color .15s ease,border-color .15s ease,opacity .15s ease,transform .15s ease;
+  }
+  .post-image,.ad-image{box-shadow:0 8px 22px rgba(0,0,0,0.38);}
+  .avatar{box-shadow:0 0 0 2px rgba(255,255,255,0.04);}
+  .btn-post:not(:disabled):hover,.btn-primary:not(:disabled):hover{filter:brightness(1.08);transform:translateY(-1px);}
+  .fab:hover{filter:brightness(1.1);transform:translateX(calc(-50% + 250px)) translateY(-2px);}
+  @media (max-width:600px){ .fab:hover{transform:translateY(-2px);} }
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .post,.post-ad{animation:fadeInUp .28s ease both;}
+  .empty{display:flex;flex-direction:column;align-items:center;gap:4px;}
+
+  /* ---------- Anuncios en el feed ---------- */
+  .post-ad{padding:14px 16px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(139,92,246,0.06),rgba(139,92,246,0) 60%);position:relative;}
+  .ad-label{display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--ink-dim);margin-bottom:10px;letter-spacing:.04em;text-transform:uppercase;font-weight:800;}
+  .ad-label svg{width:13px;height:13px;flex:none;}
+  .ad-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .ad-head .avatar{width:38px;height:38px;}
+  .ad-head .who{min-width:0;}
+  .ad-head .n{font-weight:800;font-size:.95rem;display:flex;align-items:center;gap:4px;}
+  .ad-head .n svg{width:13px;height:13px;color:var(--purple);flex:none;}
+  .ad-head .h{color:var(--ink-dim);font-size:.8rem;}
+  .ad-text{font-size:.95rem;line-height:1.42;margin:0 0 10px;}
+  .ad-image-wrap{border-radius:16px;overflow:hidden;border:1px solid var(--border);}
+  .ad-image{width:100%;max-height:320px;object-fit:cover;display:block;}
+  .ad-cta{margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;}
+  .ad-cta .u{font-size:.78rem;color:var(--ink-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+  .ad-cta button{background:var(--grad);color:#fff;border:none;padding:8px 16px;border-radius:999px;font-weight:700;font-size:.82rem;white-space:nowrap;flex:none;}
+  .ad-cta button:hover{filter:brightness(1.1);}
 </style>
 </head>
 <body>
@@ -415,10 +463,133 @@ const GROQ_API_KEY = "TU_GROQ_API_KEY";
 const GROQ_MODEL = "llama-3.3-70b-versatile";
 const ORACULO_SYSTEM_PROMPT = "Sos el Oráculo, el asistente de IA de ECOS, una red social. Hablás en español, con un tono cercano y directo. Tu función es ayudar a la gente a usar la aplicación (cómo publicar, subir fotos o banner, usar hashtags, chatear, editar su perfil, etc.), darles ideas para sus publicaciones, o simplemente charlar de lo que te pregunten. No formás parte de ningún universo de fantasía ni de hechiceros: ECOS es una red social común, como Twitter/X. Respondé de forma breve y útil.";
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
+/* ---------------- Multi-cuenta (hasta 3 en simultáneo) ----------------
+   Cada "slot" es una instancia separada de Firebase App con su propia
+   sesión de Auth (persistencia independiente en el navegador). Así se
+   puede tener hasta 3 cuentas simuladas guardadas a la vez y cambiar
+   entre ellas al instante, sin volver a "iniciar sesión". */
+const MAX_ACCOUNTS = 3;
+const defaultApp = firebase.initializeApp(firebaseConfig);
 const ROOT = "ecos";
+
+function clampSlot(n){ n = parseInt(n,10); return (isNaN(n) || n<0 || n>=MAX_ACCOUNTS) ? 0 : n; }
+let activeSlot = clampSlot(localStorage.getItem('ecos_active_slot'));
+
+const slotApps = [];
+const slotAuths = [];
+const slotDbs = [];
+const slotInfo = [null, null, null]; // {uid, char} | null (null = slot vacío)
+
+let auth, db; // referencias activas: apuntan al slot actualmente seleccionado
+
+function ensureSlot(slot){
+  if(slotApps[slot]) return;
+  const app = (slot===0) ? defaultApp : firebase.initializeApp(firebaseConfig, "ecosSlot"+slot);
+  const a = app.auth();
+  const d = app.database();
+  slotApps[slot] = app; slotAuths[slot] = a; slotDbs[slot] = d;
+  a.onAuthStateChanged(user => {
+    if(!user){
+      slotInfo[slot] = null;
+    } else {
+      slotInfo[slot] = slotInfo[slot] || { uid:user.uid, char:null };
+      d.ref(`${ROOT}/users/${user.uid}`).once('value').then(snap=>{
+        slotInfo[slot] = { uid:user.uid, char: snap.exists() ? snap.val() : null };
+        renderDrawer();
+        if(viewMode==='settings') renderSettings();
+      });
+    }
+    if(slot===activeSlot) onActiveAuthChanged(user);
+    renderDrawer();
+  });
+}
+
+function onActiveAuthChanged(user){
+  currentUser = user;
+  if(!user){
+    myChar = null; dmIndex = {}; oraculoConvs = {};
+    renderDrawer(); renderComposer(); renderTopbar();
+    if(viewMode==='settings') renderSettings();
+    return;
+  }
+  db.ref(`${ROOT}/users/${user.uid}`).once('value').then(snap=>{
+    myChar = snap.exists() ? snap.val() : null;
+    slotInfo[activeSlot] = { uid:user.uid, char: myChar };
+    renderDrawer(); renderComposer(); renderTopbar();
+    if(viewMode==='settings') renderSettings();
+    if(viewMode==='profile' && viewedUid===user.uid) renderProfile(user.uid);
+    listenDmIndex();
+    listenOraculo();
+  });
+}
+
+let usersRefListening=null, postsRefListening=null;
+function attachSharedListeners(){
+  if(usersRefListening) usersRefListening.off();
+  if(postsRefListening) postsRefListening.off();
+  usersRefListening = db.ref(`${ROOT}/users`);
+  usersRefListening.on('value', snap=>{
+    allUsers = snap.val() || {};
+    if(currentUser && allUsers[currentUser.uid]) myChar = allUsers[currentUser.uid];
+    renderDrawer();
+    if(viewMode==="explore") renderExplore();
+    if(viewMode==="profile") renderProfile(viewedUid);
+    if(viewMode==="chat") renderChatList();
+  });
+  postsRefListening = db.ref(`${ROOT}/posts`);
+  postsRefListening.on('value', snap=>{
+    allPosts = snap.val() || {};
+    if(viewMode==="feed") renderFeed();
+    if(viewMode==="explore") renderExplore();
+    if(viewMode==="profile") renderProfile(viewedUid);
+    if(viewMode==="notif") renderNotif();
+  });
+}
+
+function setActiveSlot(slot){
+  slot = clampSlot(slot);
+  ensureSlot(slot);
+  activeSlot = slot;
+  localStorage.setItem('ecos_active_slot', String(slot));
+  auth = slotAuths[slot];
+  db = slotDbs[slot];
+  attachSharedListeners();
+  onActiveAuthChanged(auth.currentUser);
+  switchView('feed');
+}
+
+function accountSwitcherHTML(){
+  let html = '<div class="acc-switcher">';
+  for(let s=0; s<MAX_ACCOUNTS; s++){
+    const info = slotInfo[s];
+    const isActive = s===activeSlot;
+    if(info){
+      const label = info.char ? info.char.nombre : ('Cuenta '+(s+1));
+      html += `<div class="acc-chip ${isActive?'active':''}" data-slot="${s}" title="${escapeHtml(label)}">
+        <img class="avatar sm" src="${avatarFor(info.char, info.uid)}">
+      </div>`;
+    } else {
+      html += `<div class="acc-chip acc-empty ${isActive?'active':''}" data-slot="${s}" title="Agregar cuenta">
+        <div class="avatar sm guest acc-plus">+</div>
+      </div>`;
+    }
+  }
+  html += '</div>';
+  return html;
+}
+function bindAccountSwitcher(root){
+  root.querySelectorAll('.acc-chip').forEach(el=>{
+    el.onclick = (e)=>{
+      e.stopPropagation();
+      const s = parseInt(el.dataset.slot,10);
+      if(s===activeSlot) return;
+      const wasEmpty = !slotInfo[s];
+      setActiveSlot(s);
+      closeDrawer();
+      if(wasEmpty) switchView('settings');
+    };
+  });
+}
 /* Las fotos de los posts se guardan como imagen comprimida (base64) directo
    en Realtime Database (campo post.imageUrl), así no hace falta el plan
    Blaze de Firebase Storage. Ver función resizeImageToDataUrl más abajo. */
@@ -451,39 +622,10 @@ function fullDate(ts){ return new Date(ts||Date.now()).toLocaleDateString('es-AR
 function pairIdFor(a,b){ return [a,b].sort().join('__'); }
 
 /* ---------------- BOOT: el feed se lee sin necesidad de sesión ---------------- */
-db.ref(`${ROOT}/users`).on('value', snap=>{
-  allUsers = snap.val() || {};
-  if(currentUser && allUsers[currentUser.uid]) myChar = allUsers[currentUser.uid];
-  renderDrawer();
-  if(viewMode==="explore") renderExplore();
-  if(viewMode==="profile") renderProfile(viewedUid);
-  if(viewMode==="chat") renderChatList();
-});
-db.ref(`${ROOT}/posts`).on('value', snap=>{
-  allPosts = snap.val() || {};
-  if(viewMode==="feed") renderFeed();
-  if(viewMode==="explore") renderExplore();
-  if(viewMode==="profile") renderProfile(viewedUid);
-  if(viewMode==="notif") renderNotif();
-});
-
-auth.onAuthStateChanged(user => {
-  currentUser = user;
-  if(!user){
-    myChar = null; dmIndex = {}; oraculoConvs = {};
-    renderDrawer(); renderComposer(); renderTopbar();
-    if(viewMode==='settings') renderSettings();
-    return;
-  }
-  db.ref(`${ROOT}/users/${user.uid}`).once('value').then(snap=>{
-    myChar = snap.exists() ? snap.val() : null;
-    renderDrawer(); renderComposer(); renderTopbar();
-    if(viewMode==='settings') renderSettings();
-    if(viewMode==='profile' && viewedUid===user.uid) renderProfile(user.uid);
-    listenDmIndex();
-    listenOraculo();
-  });
-});
+ensureSlot(activeSlot);
+auth = slotAuths[activeSlot];
+db = slotDbs[activeSlot];
+attachSharedListeners();
 
 function listenDmIndex(){
   if(!currentUser) return;
@@ -503,9 +645,11 @@ function requireAuth(motivo){
 /* ---------------- DRAWER ---------------- */
 function renderDrawer(){
   const d = document.getElementById('drawer');
+  const switcher = accountSwitcherHTML();
   if(currentUser && myChar){
     const myPostsCount = Object.values(allPosts).filter(p=>p.uid===currentUser.uid).length;
     d.innerHTML = `
+      ${switcher}
       <div class="drawer-user">
         <img class="avatar lg" src="${avatarFor(myChar,currentUser.uid)}">
         <h3>${escapeHtml(myChar.nombre)}</h3>
@@ -515,12 +659,14 @@ function renderDrawer(){
       <div class="drawer-item" id="dw-profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>Mi perfil</span></div>
       <div class="drawer-item" id="dw-settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1 1.55V21a2 2 0 01-4 0v-.09a1.7 1.7 0 00-1-1.55 1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.7 1.7 0 00.34-1.87 1.7 1.7 0 00-1.55-1H3a2 2 0 010-4h.09a1.7 1.7 0 001.55-1 1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06a1.7 1.7 0 001.87.34H9a1.7 1.7 0 001-1.55V3a2 2 0 014 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06a1.7 1.7 0 00-.34 1.87V9a1.7 1.7 0 001.55 1H21a2 2 0 010 4h-.09a1.7 1.7 0 00-1.55 1z"/></svg><span>Configuración</span></div>
       <div class="drawer-divider"></div>
-      <div class="drawer-item danger" id="dw-logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Cerrar sesión</span></div>`;
+      <div class="drawer-item danger" id="dw-logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Cerrar sesión de esta cuenta</span></div>`;
+    bindAccountSwitcher(d);
     document.getElementById('dw-profile').onclick = ()=>{ closeDrawer(); switchView('profile', currentUser.uid); };
     document.getElementById('dw-settings').onclick = ()=>{ closeDrawer(); switchView('settings'); };
     document.getElementById('dw-logout').onclick = ()=>{ closeDrawer(); auth.signOut().then(()=>switchView('feed')); };
   } else {
     d.innerHTML = `
+      ${switcher}
       <div class="drawer-user">
         <img class="avatar lg guest" src="${DEFAULT_AVATAR}invitado">
         <h3>Invitado</h3>
@@ -528,6 +674,7 @@ function renderDrawer(){
       </div>
       <p style="color:var(--ink-dim);font-size:.88rem;">Creá tu perfil para publicar, reaccionar, comentar y chatear.</p>
       <button class="drawer-login" id="dw-login">Crear cuenta / Iniciar sesión</button>`;
+    bindAccountSwitcher(d);
     document.getElementById('dw-login').onclick = ()=>{ closeDrawer(); switchView('settings'); };
   }
 }
@@ -740,12 +887,76 @@ function resizeImageToDataUrl(file, maxDim=1080){
   });
 }
 
+/* ---------------- Anuncios patrocinados (bots de empresa) ---------------- */
+const AD_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11v3a1 1 0 001 1h2l4 4V6L6 10H4a1 1 0 00-1 1z"/><path d="M15.5 8.5a5 5 0 010 7"/><path d="M18.5 5.5a9 9 0 010 13"/></svg>`;
+const BOT_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="12" cy="3" r="1"/><path d="M9 13v2M15 13v2"/></svg>`;
+const ADS = [
+  {
+    nombre:"NocturnaCorp", handle:"@nocturnacorp_bot",
+    texto:"Tu energía no debería depender del sol. Probá nuestras cápsulas VitalNoche y rendí como si nada. #Publicidad",
+    img:"https://picsum.photos/seed/nocturnacorp/800/500",
+    cta:"Ver oferta", url:"nocturnacorp.example"
+  },
+  {
+    nombre:"Umbral Seguros", handle:"@umbral_bot",
+    texto:"Cubrimos lo que otros ni se animan a mirar. Cotizá tu póliza en 2 minutos. #Publicidad",
+    img:"https://picsum.photos/seed/umbralseguros/800/500",
+    cta:"Cotizar ahora", url:"umbralseguros.example"
+  },
+  {
+    nombre:"Pulso Radio", handle:"@pulsoradio_bot",
+    texto:"La música que acompaña tus noches largas. Transmitimos en vivo, todos los días, desde cualquier rincón. #Publicidad",
+    img:"https://picsum.photos/seed/pulsoradio/800/500",
+    cta:"Escuchar", url:"pulsoradio.example"
+  },
+  {
+    nombre:"Aegis Privada", handle:"@aegis_bot",
+    texto:"Protección discreta para gente con vidas complicadas. Consultá sin compromiso. #Publicidad",
+    img:"https://picsum.photos/seed/aegisprivada/800/500",
+    cta:"Contactar", url:"aegisprivada.example"
+  },
+  {
+    nombre:"VitaLabs", handle:"@vitalabs_bot",
+    texto:"Investigación de vanguardia, resultados reales. Conocé nuestros últimos estudios. #Publicidad",
+    img:"https://picsum.photos/seed/vitalabs/800/500",
+    cta:"Leer más", url:"vitalabs.example"
+  }
+];
+let adCounter = 0;
+function renderAd(){
+  const ad = ADS[adCounter % ADS.length];
+  adCounter++;
+  return `
+  <div class="post-ad">
+    <div class="ad-label">${AD_ICON}<span>Publicidad</span></div>
+    <div class="ad-head">
+      <img class="avatar" src="${DEFAULT_AVATAR+encodeURIComponent(ad.handle)}">
+      <div class="who">
+        <div class="n">${escapeHtml(ad.nombre)}${BOT_ICON}</div>
+        <div class="h">${escapeHtml(ad.handle)}</div>
+      </div>
+    </div>
+    <p class="ad-text">${linkifyTags(ad.texto)}</p>
+    <div class="ad-image-wrap"><img class="ad-image" src="${ad.img}" loading="lazy" alt="${escapeHtml(ad.nombre)}"></div>
+    <div class="ad-cta">
+      <span class="u">${escapeHtml(ad.url)}</span>
+      <button type="button">${escapeHtml(ad.cta)}</button>
+    </div>
+  </div>`;
+}
+
 /* ---------------- FEED (lectura pública) ---------------- */
 function renderFeed(){
   const list = Object.entries(allPosts).sort((a,b)=>b[1].createdAt-a[1].createdAt);
   const container = document.getElementById('feed-list');
   if(list.length===0){ container.innerHTML = '<div class="empty"><b>Silencio total.</b>Sé el primero en romper el silencio.</div>'; return; }
-  container.innerHTML = list.map(([id,post])=>renderPost(id,post)).join('');
+  adCounter = 0;
+  const chunks = [];
+  list.forEach(([id,post], i)=>{
+    chunks.push(renderPost(id,post));
+    if((i+1)%4===0) chunks.push(renderAd());
+  });
+  container.innerHTML = chunks.join('');
   attachPostHandlers(container);
 }
 
@@ -996,9 +1207,11 @@ function renderSettings(msg){
   }
   wrap.innerHTML = `
     <div class="settings-wrap">
+      <h3 class="section-title" style="margin-top:0;">Tus cuentas (${slotInfo.filter(Boolean).length}/${MAX_ACCOUNTS})</h3>
+      ${accountSwitcherHTML()}
       <div class="account-row">
         <img class="avatar" src="${avatarFor(myChar, currentUser.uid)}">
-        <div><div class="n">${escapeHtml(myChar.nombre)}</div><div class="g">Cuenta simulada: ${currentUser.uid.slice(0,10)}...</div></div>
+        <div><div class="n">${escapeHtml(myChar.nombre)}</div><div class="g">Cuenta ${activeSlot+1} de ${MAX_ACCOUNTS} · simulada: ${currentUser.uid.slice(0,10)}...</div></div>
       </div>
       <h3>Editá tu ficha</h3>
       <p class="sub">Los cambios se ven al instante en tu perfil público.</p>
@@ -1008,6 +1221,7 @@ function renderSettings(msg){
       <button class="btn-secondary" id="btn-logout">Cerrar sesión</button>
     </div>`;
   bindSettingsForm(false);
+  bindAccountSwitcher(wrap);
   document.getElementById('btn-logout').onclick = () => auth.signOut().then(()=>switchView('feed'));
 }
 
@@ -1085,6 +1299,7 @@ function bindSettingsForm(isCreate){
     };
     db.ref(`${ROOT}/users/${currentUser.uid}`).set(char).then(()=>{
       myChar = char;
+      slotInfo[activeSlot] = { uid: currentUser.uid, char };
       renderDrawer();
       renderComposer();
       switchView('feed');
