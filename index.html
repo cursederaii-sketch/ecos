@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ECOS — Red de Hechiceros | Cursed Era II</title>
+<title>ECOS — Red Social</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -197,6 +197,10 @@
   .btn-secondary{background:transparent;border:1px solid var(--border);color:var(--ink);padding:11px 22px;border-radius:999px;font-weight:700;font-size:.9rem;margin-top:10px;}
   .btn-secondary:hover{border-color:var(--blood);color:var(--blood);}
   .settings-wrap .err{color:var(--blood);font-size:.82rem;margin-top:8px;display:none;}
+  .upload-row{display:flex;align-items:center;gap:12px;margin-top:4px;}
+  .upload-row .avatar{width:52px;height:52px;}
+  .banner-preview{width:70px;height:38px;border-radius:8px;flex:none;border:1px solid var(--border);}
+  .up-btn{margin:0 !important;padding:8px 14px !important;font-size:.8rem !important;}
   .account-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);margin-bottom:20px;}
   .account-row .n{font-weight:800;}
   .account-row .g{color:var(--ink-dim);font-size:.85rem;}
@@ -409,7 +413,7 @@ const firebaseConfig = {
    ========================================================= */
 const GROQ_API_KEY = "TU_GROQ_API_KEY";
 const GROQ_MODEL = "llama-3.3-70b-versatile";
-const ORACULO_SYSTEM_PROMPT = "Sos el Oráculo de ECOS, una entidad semi-amaldita que habita la red social de hechiceros del universo Cursed Era II. Hablás en español, con un tono enigmático pero cercano, ocasionalmente con metáforas sobre maldiciones, energía espiritual y sedes. Ayudás a los hechiceros con lo que te pidan (dudas, ideas para transmisiones, lore, charla) de forma breve y útil, sin romper nunca el tono de la red.";
+const ORACULO_SYSTEM_PROMPT = "Sos el Oráculo, el asistente de IA de ECOS, una red social. Hablás en español, con un tono cercano y directo. Tu función es ayudar a la gente a usar la aplicación (cómo publicar, subir fotos o banner, usar hashtags, chatear, editar su perfil, etc.), darles ideas para sus publicaciones, o simplemente charlar de lo que te pregunten. No formás parte de ningún universo de fantasía ni de hechiceros: ECOS es una red social común, como Twitter/X. Respondé de forma breve y útil.";
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -431,10 +435,17 @@ let oraculoConvs = {};
 let activeConvId = null;
 
 const DEFAULT_AVATAR = "https://api.dicebear.com/7.x/shapes/svg?seed=";
-function avatarFor(char, seed){ return (char && char.avatar) ? char.avatar : DEFAULT_AVATAR + encodeURIComponent(seed||"hechicero"); }
-function handleFor(char, uid){ const base=(char&&char.nombre)?char.nombre:"hechicero"; return "@"+base.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"").slice(0,20) + "_" + uid.slice(0,4); }
+function avatarFor(char, seed){ return (char && char.avatar) ? char.avatar : DEFAULT_AVATAR + encodeURIComponent(seed||"usuario"); }
+function handleFor(char, uid){
+  if(char && char.handle) return "@"+char.handle;
+  const base=(char&&char.nombre)?char.nombre:"usuario";
+  return "@"+base.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"").slice(0,20) + "_" + uid.slice(0,4);
+}
+function sanitizeHandle(raw){
+  return (raw||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9_]/g,"").slice(0,20);
+}
 function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
-function linkifyTags(text){ return escapeHtml(text).replace(/#(\w+)/g, '<span class="tag">#$1</span>'); }
+function linkifyTags(text){ return escapeHtml(text).replace(/#([\p{L}\p{N}_]+)/gu, '<span class="tag">#$1</span>'); }
 function timeAgo(ts){ if(!ts) return ""; const s=Math.floor((Date.now()-ts)/1000); if(s<60)return "ahora"; if(s<3600)return Math.floor(s/60)+"m"; if(s<86400)return Math.floor(s/3600)+"h"; if(s<604800)return Math.floor(s/86400)+"d"; return new Date(ts).toLocaleDateString(); }
 function fullDate(ts){ return new Date(ts||Date.now()).toLocaleDateString('es-AR',{month:'long',year:'numeric'}); }
 function pairIdFor(a,b){ return [a,b].sort().join('__'); }
@@ -515,7 +526,7 @@ function renderDrawer(){
         <h3>Invitado</h3>
         <div class="h">Estás viendo ECOS sin cuenta</div>
       </div>
-      <p style="color:var(--ink-dim);font-size:.88rem;">Creá tu ficha de hechicero para transmitir, reaccionar, comentar y chatear.</p>
+      <p style="color:var(--ink-dim);font-size:.88rem;">Creá tu perfil para publicar, reaccionar, comentar y chatear.</p>
       <button class="drawer-login" id="dw-login">Crear cuenta / Iniciar sesión</button>`;
     document.getElementById('dw-login').onclick = ()=>{ closeDrawer(); switchView('settings'); };
   }
@@ -542,13 +553,13 @@ function renderTopbar(){
     row = `<div class="topbar-row">${myAvatarBtn()}<div class="tb-center tb-logo">${SIGIL_SVG}</div><div class="tb-side"></div></div>`;
   } else if(viewMode==='explore'){
     row = `<div class="topbar-row">${myAvatarBtn()}<div class="tb-center"><div class="tb-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="text" placeholder="Buscar en ECOS" id="explore-search"></div></div></div>`;
-    tabsHtml = `<div class="tabs"><div class="tab-btn ${exploreTab==='personas'?'active':''}" data-tab="personas">Hechiceros</div><div class="tab-btn ${exploreTab==='tendencias'?'active':''}" data-tab="tendencias">Tendencias</div></div>`;
+    tabsHtml = `<div class="tabs"><div class="tab-btn ${exploreTab==='personas'?'active':''}" data-tab="personas">Personas</div><div class="tab-btn ${exploreTab==='tendencias'?'active':''}" data-tab="tendencias">Tendencias</div></div>`;
   } else if(viewMode==='notif'){
     row = `<div class="topbar-row">${myAvatarBtn()}<div class="tb-center"><h2 class="tb-title">Notificaciones</h2></div><div class="tb-side"></div></div>`;
   } else if(viewMode==='chat'){
     row = `<div class="topbar-row">${myAvatarBtn()}<div class="tb-center"><h2 class="tb-title">Chat</h2></div><div class="tb-side" id="tb-new-chat">${plusIcon()}</div></div>`;
   } else if(viewMode==='thread'){
-    const u = allUsers[activeThreadUid] || {nombre:'Hechicero'};
+    const u = allUsers[activeThreadUid] || {nombre:'Usuario'};
     row = `<div class="topbar-row"><div class="tb-side" id="tb-back">${BACK_SVG}</div><div class="tb-center"><h2 class="tb-title">${escapeHtml(u.nombre)}</h2><div class="tb-sub">${handleFor(u,activeThreadUid)}</div></div><div class="tb-side"></div></div>`;
   } else if(viewMode==='oraculo'){
     row = `<div class="topbar-row"><div class="tb-side"></div><div class="tb-center" style="text-align:center;"><h2 class="tb-title" style="text-align:center;">Oráculo</h2></div><div class="tb-side" id="tb-new-convo">${plusIcon()}</div></div>`;
@@ -611,7 +622,7 @@ function renderComposer(){
     area.innerHTML = `
       <img class="avatar" src="${avatarFor(myChar, currentUser.uid)}">
       <div class="composer-main">
-        <textarea id="composer-text" placeholder="¿Qué está pasando en tu sede?" maxlength="280"></textarea>
+        <textarea id="composer-text" placeholder="¿Qué está pasando?" maxlength="280"></textarea>
         <div class="composer-img-preview" id="composer-img-preview" style="display:none;">
           <img id="composer-img-preview-img" src="">
           <button type="button" id="composer-img-remove" title="Quitar imagen">
@@ -733,13 +744,13 @@ function resizeImageToDataUrl(file, maxDim=1080){
 function renderFeed(){
   const list = Object.entries(allPosts).sort((a,b)=>b[1].createdAt-a[1].createdAt);
   const container = document.getElementById('feed-list');
-  if(list.length===0){ container.innerHTML = '<div class="empty"><b>Silencio total.</b>Sé el primer hechicero en romper el silencio.</div>'; return; }
+  if(list.length===0){ container.innerHTML = '<div class="empty"><b>Silencio total.</b>Sé el primero en romper el silencio.</div>'; return; }
   container.innerHTML = list.map(([id,post])=>renderPost(id,post)).join('');
   attachPostHandlers(container);
 }
 
 function renderPost(id, post){
-  const author = allUsers[post.uid] || {nombre:"Hechicero desconocido"};
+  const author = allUsers[post.uid] || {nombre:"Usuario desconocido"};
   const liked = currentUser && post.likes && post.likes[currentUser.uid];
   const rt = currentUser && post.retweets && post.retweets[currentUser.uid];
   const likeCount = post.likes ? Object.keys(post.likes).length : 0;
@@ -753,7 +764,6 @@ function renderPost(id, post){
         <span class="name" data-uid="${post.uid}">${escapeHtml(author.nombre)}</span>
         <span class="handle">${handleFor(author, post.uid)}</span>
         <span class="time">· ${timeAgo(post.createdAt)}</span>
-        ${author.faccion ? `<span class="faction">${escapeHtml(author.faccion)}</span>` : ''}
       </div>
       ${post.text ? `<p class="post-text">${linkifyTags(post.text)}</p>` : ''}
       ${post.imageUrl ? `<img class="post-image" src="${post.imageUrl}" data-full="${post.imageUrl}" loading="lazy">` : ''}
@@ -789,7 +799,7 @@ function renderPost(id, post){
 }
 
 function renderReply(r){
-  const author = allUsers[r.uid] || {nombre:"Hechicero desconocido"};
+  const author = allUsers[r.uid] || {nombre:"Usuario desconocido"};
   return `<div class="reply"><img class="avatar" src="${avatarFor(author,r.uid)}">
     <div><div class="reply-head"><span class="name">${escapeHtml(author.nombre)}</span><span class="time">· ${timeAgo(r.createdAt)}</span></div>
     <p class="reply-text">${linkifyTags(r.text)}</p></div></div>`;
@@ -846,19 +856,19 @@ function renderExplore(){
   const container = document.getElementById('explore-list');
   if(exploreTab==='personas'){
     let users = Object.entries(allUsers);
-    if(q) users = users.filter(([uid,u])=> (u.nombre||'').toLowerCase().includes(q) || (u.faccion||'').toLowerCase().includes(q));
+    if(q) users = users.filter(([uid,u])=> (u.nombre||'').toLowerCase().includes(q) || (u.handle||'').toLowerCase().includes(q));
     container.innerHTML = `
-      <h3 class="section-title">Hechiceros</h3>
+      <h3 class="section-title">Personas</h3>
       ${users.map(([uid,u])=>`
         <div class="who-row" data-uid="${uid}">
           <img class="avatar" src="${avatarFor(u,uid)}">
-          <div><div class="n">${escapeHtml(u.nombre)} <span class="power-badge">${escapeHtml(u.grado||'')}</span></div>
-          <div class="f">${handleFor(u,uid)} · ${escapeHtml(u.faccion||'')}</div></div>
+          <div><div class="n">${escapeHtml(u.nombre)}</div>
+          <div class="f">${handleFor(u,uid)}${u.ubicacion?` · ${escapeHtml(u.ubicacion)}`:''}</div></div>
         </div>`).join('') || '<div class="empty"><b>Nadie por aquí.</b></div>'}`;
     container.querySelectorAll('.who-row').forEach(el=> el.onclick=()=>switchView('profile', el.dataset.uid));
   } else {
     const tags = {};
-    Object.values(allPosts).forEach(p=> (p.text.match(/#(\w+)/g)||[]).forEach(t=> tags[t]=(tags[t]||0)+1));
+    Object.values(allPosts).forEach(p=> (p.text.match(/#[\p{L}\p{N}_]+/gu)||[]).forEach(t=> tags[t]=(tags[t]||0)+1));
     let tagEntries = Object.entries(tags).sort((a,b)=>b[1]-a[1]);
     if(q) tagEntries = tagEntries.filter(([t])=> t.toLowerCase().includes(q));
     container.innerHTML = `
@@ -891,7 +901,7 @@ function renderNotif(){
   };
   const VERB = { like:'le dio like a tu transmisión', rt:'reposteó tu transmisión', reply:'respondió a tu transmisión' };
   container.innerHTML = items.map(it=>{
-    const u = allUsers[it.uid] || {nombre:'Hechicero desconocido'};
+    const u = allUsers[it.uid] || {nombre:'Usuario desconocido'};
     return `<div class="notif-item" data-uid="${it.uid}">
       <div class="notif-icon ${it.type}">${ICONS[it.type]}</div>
       <img class="avatar sm" src="${avatarFor(u,it.uid)}">
@@ -916,18 +926,19 @@ function renderProfile(uid){
   const isMe = currentUser && uid===currentUser.uid;
   profileTab = profileTab || 'posts';
 
+  const bannerStyle = u.banner ? `background-image:url('${u.banner}');background-size:cover;background-position:center;opacity:1;` : '';
   const header = `
-    <div class="profile-banner"></div>
+    <div class="profile-banner" style="${bannerStyle}"></div>
     <div class="profile-top">
       <div class="avatar-row">
         <img class="avatar lg" src="${avatarFor(u,uid)}">
       </div>
       <h2>${escapeHtml(u.nombre)}</h2>
       <div class="profile-handle">${handleFor(u,uid)}</div>
-      <div class="profile-meta">${u.faccion?`<span class="faction">${escapeHtml(u.faccion)}</span>`:''}<span class="power-badge">${escapeHtml(u.grado||'')}</span></div>
       ${u.bio?`<p class="profile-bio">${escapeHtml(u.bio)}</p>`:''}
+      ${u.ubicacion?`<div class="profile-joined"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1116 0z"/><circle cx="12" cy="10" r="3"/></svg>${escapeHtml(u.ubicacion)}</div>`:''}
       <div class="profile-joined"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Se unió en ${fullDate(u.createdAt)}</div>
-      <div class="profile-stats"><span><b>${myPosts.length}</b> transmisiones</span><span><b>${totalLikes}</b> reacciones</span></div>
+      <div class="profile-stats"><span><b>${myPosts.length}</b> publicaciones</span><span><b>${totalLikes}</b> reacciones</span></div>
       <div class="profile-actions">
         <button id="btn-share-profile">Compartir</button>
         ${isMe ? `<button id="btn-edit-profile">Editar perfil</button>` : (currentUser && myChar ? `<button id="btn-dm-profile">Mensaje</button>` : '')}
@@ -1001,31 +1012,75 @@ function renderSettings(msg){
 }
 
 function settingsFormHTML(u){
+  const avatarSrc = u.avatar || (currentUser ? (DEFAULT_AVATAR+encodeURIComponent(currentUser.uid)) : DEFAULT_AVATAR+"nuevo");
+  const bannerStyle = u.banner ? `background-image:url('${u.banner}');background-size:cover;background-position:center;` : `background:var(--grad);opacity:.55;`;
   return `
-    <div class="field"><label>Nombre del personaje</label><input type="text" id="cf-nombre" value="${escapeHtml(u.nombre||'')}" placeholder="Ej: Akira Tsukishima" maxlength="40"></div>
+    <div class="field"><label>Nombre</label><input type="text" id="cf-nombre" value="${escapeHtml(u.nombre||'')}" placeholder="Ej: Juana Pérez" maxlength="40"></div>
+    <div class="field"><label>Usuario (@)</label><input type="text" id="cf-handle" value="${escapeHtml(u.handle||'')}" placeholder="ej: juanaperez" maxlength="20"></div>
+    <div class="field"><label>Ubicación (opcional)</label><input type="text" id="cf-ubicacion" value="${escapeHtml(u.ubicacion||'')}" placeholder="Ej: Buenos Aires, Argentina" maxlength="30"></div>
+    <div class="field"><label>Bio</label><textarea id="cf-bio" placeholder="Contá algo sobre vos..." maxlength="160">${escapeHtml(u.bio||'')}</textarea></div>
     <div class="row2">
-      <div class="field"><label>Facción / sede</label><input type="text" id="cf-faccion" value="${escapeHtml(u.faccion||'')}" placeholder="Ej: Sede Tokio" maxlength="30"></div>
-      <div class="field"><label>Grado</label>
-        <select id="cf-grado">
-          ${["Grado 4","Grado 3","Grado 2","Grado 1","Semi-Especial","Especial"].map(g=>`<option ${u.grado===g?'selected':''}>${g}</option>`).join('')}
-        </select>
+      <div class="field">
+        <label>Foto de perfil</label>
+        <div class="upload-row">
+          <img id="cf-avatar-preview" class="avatar" src="${avatarSrc}">
+          <button type="button" class="btn-secondary up-btn" id="cf-avatar-btn">Elegir foto</button>
+        </div>
+        <input type="file" accept="image/*" id="cf-avatar-file" style="display:none;">
       </div>
-    </div>
-    <div class="field"><label>URL de avatar (opcional)</label><input type="text" id="cf-avatar" value="${escapeHtml(u.avatar||'')}" placeholder="https://..."></div>
-    <div class="field"><label>Bio</label><textarea id="cf-bio" placeholder="Una frase que defina a tu personaje..." maxlength="160">${escapeHtml(u.bio||'')}</textarea></div>`;
+      <div class="field">
+        <label>Banner</label>
+        <div class="upload-row">
+          <div id="cf-banner-preview" class="banner-preview" style="${bannerStyle}"></div>
+          <button type="button" class="btn-secondary up-btn" id="cf-banner-btn">Elegir banner</button>
+        </div>
+        <input type="file" accept="image/*" id="cf-banner-file" style="display:none;">
+      </div>
+    </div>`;
 }
 
 function bindSettingsForm(isCreate){
+  let pendingAvatar = (myChar && myChar.avatar) || "";
+  let pendingBanner = (myChar && myChar.banner) || "";
+
+  document.getElementById('cf-avatar-btn').onclick = () => document.getElementById('cf-avatar-file').click();
+  document.getElementById('cf-avatar-file').addEventListener('change', e => {
+    const file = e.target.files[0]; e.target.value='';
+    if(!file) return;
+    resizeImageToDataUrl(file, 400).then(dataUrl => {
+      pendingAvatar = dataUrl;
+      document.getElementById('cf-avatar-preview').src = dataUrl;
+    });
+  });
+  document.getElementById('cf-banner-btn').onclick = () => document.getElementById('cf-banner-file').click();
+  document.getElementById('cf-banner-file').addEventListener('change', e => {
+    const file = e.target.files[0]; e.target.value='';
+    if(!file) return;
+    resizeImageToDataUrl(file, 1200).then(dataUrl => {
+      pendingBanner = dataUrl;
+      const prev = document.getElementById('cf-banner-preview');
+      prev.style.background = `url('${dataUrl}') center/cover`;
+      prev.style.opacity = 1;
+    });
+  });
+
   document.getElementById('btn-save-char').onclick = () => {
+    const errBox = document.getElementById('char-err');
+    errBox.style.display='none';
     const nombre = document.getElementById('cf-nombre').value.trim();
-    if(!nombre){ document.getElementById('char-err').style.display='block'; return; }
+    if(!nombre){ errBox.textContent="Ponle al menos un nombre."; errBox.style.display='block'; return; }
+    const handle = sanitizeHandle(document.getElementById('cf-handle').value);
+    if(handle){
+      const taken = Object.entries(allUsers).some(([uid,u2]) => uid!==currentUser.uid && u2.handle===handle);
+      if(taken){ errBox.textContent="Ese @usuario ya está en uso, elegí otro."; errBox.style.display='block'; return; }
+    }
     const char = {
       nombre,
-      faccion: document.getElementById('cf-faccion').value.trim() || "Sin sede",
-      grado: document.getElementById('cf-grado').value,
-      avatar: document.getElementById('cf-avatar').value.trim(),
+      handle: handle || (myChar && myChar.handle) || "",
+      ubicacion: document.getElementById('cf-ubicacion').value.trim(),
+      avatar: pendingAvatar,
+      banner: pendingBanner,
       bio: document.getElementById('cf-bio').value.trim(),
-      googleName: "",
       createdAt: (myChar && myChar.createdAt) || Date.now()
     };
     db.ref(`${ROOT}/users/${currentUser.uid}`).set(char).then(()=>{
@@ -1041,7 +1096,7 @@ function bindSettingsForm(isCreate){
 function renderChatList(){
   const container = document.getElementById('chat-list');
   if(!(currentUser && myChar)){
-    container.innerHTML = `<div class="guest-card"><h3>Necesitás una cuenta</h3><p>Iniciá sesión para chatear con otros hechiceros.</p><button id="chat-login">Crear cuenta / Iniciar sesión</button></div>`;
+    container.innerHTML = `<div class="guest-card"><h3>Necesitás una cuenta</h3><p>Iniciá sesión para chatear con otras personas.</p><button id="chat-login">Crear cuenta / Iniciar sesión</button></div>`;
     document.getElementById('chat-login').onclick = ()=>switchView('settings');
     return;
   }
@@ -1051,7 +1106,7 @@ function renderChatList(){
     return;
   }
   container.innerHTML = entries.map(([otherUid, meta])=>{
-    const u = allUsers[otherUid] || {nombre:'Hechicero'};
+    const u = allUsers[otherUid] || {nombre:'Usuario'};
     return `<div class="chat-item" data-uid="${otherUid}">
       <img class="avatar" src="${avatarFor(u,otherUid)}">
       <div class="who"><div class="n">${escapeHtml(u.nombre)}</div><div class="last">${escapeHtml(meta.lastText||'')}</div></div>
@@ -1065,9 +1120,9 @@ function openChatPicker(){
   const container = document.getElementById('chat-list');
   const users = Object.entries(allUsers).filter(([uid])=>uid!==currentUser.uid);
   container.innerHTML = `
-    <div class="tb-search" style="margin:12px 16px;width:calc(100% - 32px);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="text" placeholder="Buscar hechicero..." id="picker-search"></div>
+    <div class="tb-search" style="margin:12px 16px;width:calc(100% - 32px);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="text" placeholder="Buscar usuario..." id="picker-search"></div>
     <div class="picker-list" id="picker-list">
-      ${users.map(([uid,u])=>`<div class="who-row" data-uid="${uid}"><img class="avatar" src="${avatarFor(u,uid)}"><div><div class="n">${escapeHtml(u.nombre)}</div><div class="f">${handleFor(u,uid)}</div></div></div>`).join('') || '<div class="empty"><b>No hay más hechiceros todavía.</b></div>'}
+      ${users.map(([uid,u])=>`<div class="who-row" data-uid="${uid}"><img class="avatar" src="${avatarFor(u,uid)}"><div><div class="n">${escapeHtml(u.nombre)}</div><div class="f">${handleFor(u,uid)}</div></div></div>`).join('') || '<div class="empty"><b>No hay más usuarios todavía.</b></div>'}
     </div>`;
   container.querySelectorAll('.who-row').forEach(el=> el.onclick=()=>switchView('thread', el.dataset.uid));
   document.getElementById('picker-search').addEventListener('input', e=>{
@@ -1130,10 +1185,10 @@ function listenOraculo(){
   });
 }
 const ORACULO_CHIPS = [
-  "Contame algo del lore de las sedes de ECOS",
-  "Dame 3 ideas para mi próxima transmisión",
-  "¿Qué significa mi grado de hechicero?",
-  "Ayudame a escribir la bio de mi personaje"
+  "¿Cómo subo una foto de perfil o banner?",
+  "Dame 3 ideas para mi próxima publicación",
+  "¿Cómo funcionan los hashtags acá?",
+  "Ayudame a escribir mi bio"
 ];
 const ORACULO_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/></svg>`;
 
@@ -1149,7 +1204,7 @@ function renderOraculo(){
   if(!activeConvId){
     const convEntries = Object.entries(oraculoConvs).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
     wrap.innerHTML = `
-      <div class="oraculo-intro">${ORACULO_ICON}<h3>El Oráculo</h3><p>Una entidad amaldita que habita ECOS. Preguntale lo que quieras.</p></div>
+      <div class="oraculo-intro">${ORACULO_ICON}<h3>El Oráculo</h3><p>El asistente de ECOS. Preguntale lo que quieras sobre la app.</p></div>
       ${keyMissing ? `<div class="oraculo-key-warning">Todavía no configuraste tu <code>GROQ_API_KEY</code> arriba en el código.</div>` : ''}
       <div class="oraculo-chips" id="oraculo-chips">${ORACULO_CHIPS.map(c=>`<div class="oraculo-chip" data-chip="${escapeHtml(c)}">${escapeHtml(c)}</div>`).join('')}</div>
       ${convEntries.length ? `<h3 class="section-title">Conversaciones recientes</h3><div class="oraculo-convlist">${convEntries.map(([id,c])=>`<div class="oraculo-conv-row" data-id="${id}"><span>${escapeHtml(c.title||'Nueva conversación')}</span><span class="d">${timeAgo(c.createdAt)}</span></div>`).join('')}</div>` : ''}
