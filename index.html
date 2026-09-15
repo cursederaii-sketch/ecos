@@ -134,6 +134,41 @@
   .pa-btn.like-btn.liked{color:var(--blood);}
   .pa-btn.like-btn.liked svg{fill:var(--blood);}
   .pa-btn.share-btn:hover{color:#4fb0e8;background:rgba(79,176,232,0.1);}
+  .pa-btn.del-btn:hover{color:var(--blood);background:var(--blood-dim);}
+
+  /* ---------- REPOST / CITAR MENU ---------- */
+  .rt-wrap{position:relative;}
+  .rt-menu{position:absolute;bottom:36px;left:0;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:6px;min-width:180px;box-shadow:0 10px 30px rgba(0,0,0,0.55);z-index:20;display:none;}
+  .rt-menu.open{display:block;}
+  .rt-menu-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-size:.9rem;font-weight:700;color:var(--ink);white-space:nowrap;}
+  .rt-menu-item:hover{background:var(--bg-hover);}
+  .rt-menu-item svg{width:18px;height:18px;color:var(--ink-dim);flex:none;}
+  .rt-menu-item.active-item{color:#3fce6e;}
+  .rt-menu-item.active-item svg{color:#3fce6e;}
+
+  /* ---------- QUOTE BLOCK (cita embebida) ---------- */
+  .quote-block{border:1px solid var(--border);border-radius:14px;padding:10px 12px;margin-top:8px;}
+  .quote-block:not(.qb-deleted):hover{background:rgba(255,255,255,0.02);}
+  .quote-block .qb-head{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+  .quote-block .qb-head .name{font-weight:800;font-size:.88rem;}
+  .quote-block .qb-head .handle,.quote-block .qb-head .time{color:var(--ink-dim);font-size:.83rem;}
+  .quote-block .qb-text{margin:2px 0 0;font-size:.9rem;line-height:1.35;white-space:pre-wrap;word-break:break-word;}
+  .quote-block .qb-image{display:block;width:100%;max-height:240px;object-fit:cover;border-radius:10px;margin-top:6px;border:1px solid var(--border);}
+  .quote-block.qb-deleted{color:var(--ink-dim);font-style:italic;font-size:.85rem;}
+
+  /* ---------- QUOTE MODAL ---------- */
+  .qm-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:40;display:flex;align-items:flex-end;justify-content:center;}
+  .quote-modal{background:var(--bg-card);border:1px solid var(--border);border-top-left-radius:18px;border-top-right-radius:18px;max-width:600px;width:100%;padding:16px;max-height:85vh;overflow-y:auto;}
+  @media(min-width:640px){.qm-backdrop{align-items:center;}.quote-modal{border-radius:18px;}}
+  .quote-modal h3{margin:0 0 14px;font-size:1.05rem;}
+  .quote-modal textarea{width:100%;background:transparent;border:none;color:var(--ink);font-size:1.05rem;resize:none;min-height:70px;outline:none;font-family:var(--font-ui);}
+  .quote-modal textarea::placeholder{color:var(--ink-dim);}
+  .quote-modal .qm-foot{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:10px;border-top:1px solid var(--border);padding-top:10px;}
+  .qm-char-count{margin-right:auto;color:var(--ink-dim);font-size:.8rem;}
+  .qm-cancel{padding:9px 16px;border-radius:999px;font-weight:700;color:var(--ink-dim);}
+  .qm-cancel:hover{background:var(--bg-hover);}
+  .qm-submit{background:var(--grad);border:none;color:#fff;padding:9px 18px;border-radius:999px;font-weight:700;}
+  .qm-submit:disabled{opacity:.4;cursor:not-allowed;}
 
   .replies{margin-top:10px;padding-left:6px;border-left:2px solid var(--border);}
   .reply{display:flex;gap:9px;margin-top:12px;padding-left:8px;}
@@ -322,6 +357,11 @@
   .ds-account-card .who{min-width:0;flex:1;}
   .ds-account-card .n{font-weight:800;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .ds-account-card .h{color:var(--ink-dim);font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ds-account-more{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;color:var(--ink-dim);}
+  .ds-account-more:hover{background:rgba(255,255,255,0.08);color:var(--ink);}
+  .ds-account-more svg{width:17px;height:17px;}
+  .premium-modal-icon{display:flex;justify-content:center;margin-bottom:8px;}
+  .premium-modal-icon svg{width:42px;height:42px;color:var(--purple);}
 
   .ds-search{background:#0f0a15;border:1px solid var(--border);border-radius:999px;padding:11px 16px;display:flex;align-items:center;gap:10px;}
   .ds-search svg{width:16px;height:16px;color:var(--ink-dim);flex:none;}
@@ -477,8 +517,8 @@
          "users": { ".read": true, "$uid": { ".write": "auth != null && auth.uid === $uid" } },
          "posts": {
            ".read": true,
-           ".write": "auth != null",
            "$postId": {
+             ".write": "auth != null && (!data.exists() || data.child('uid').val() === auth.uid)",
              "likes":    { "$uid": { ".write": "auth != null && auth.uid === $uid" } },
              "retweets": { "$uid": { ".write": "auth != null && auth.uid === $uid" } },
              "replies":  { ".write": "auth != null" }
@@ -800,7 +840,12 @@ const DS_ICONS = {
   notif: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>`,
   chat: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.5a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.3z"/></svg>`,
   profile: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>`,
-  settings: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1 1.55V21a2 2 0 01-4 0v-.09a1.7 1.7 0 00-1-1.55 1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.7 1.7 0 00.34-1.87 1.7 1.7 0 00-1.55-1H3a2 2 0 010-4h.09a1.7 1.7 0 001.55-1 1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06a1.7 1.7 0 001.87.34H9a1.7 1.7 0 001-1.55V3a2 2 0 014 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06a1.7 1.7 0 00-.34 1.87V9a1.7 1.7 0 001.55 1H21a2 2 0 010 4h-.09a1.7 1.7 0 00-1.55 1z"/></svg>`
+  settings: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1 1.55V21a2 2 0 01-4 0v-.09a1.7 1.7 0 00-1-1.55 1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.7 1.7 0 00.34-1.87 1.7 1.7 0 00-1.55-1H3a2 2 0 010-4h.09a1.7 1.7 0 001.55-1 1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06a1.7 1.7 0 001.87.34H9a1.7 1.7 0 001-1.55V3a2 2 0 014 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06a1.7 1.7 0 00-.34 1.87V9a1.7 1.7 0 001.55 1H21a2 2 0 010 4h-.09a1.7 1.7 0 00-1.55 1z"/></svg>`,
+  follow: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>`,
+  history: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9"/><path d="M3 4v5h5"/><path d="M12 7v5l4 2"/></svg>`,
+  studio: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15c4-1 7-5.5 7-11 0 0-6 0-10 4-3 3-3.5 6.5-3.5 6.5S9 15 12 15z"/><circle cx="13.5" cy="8.5" r="1.5"/><path d="M7 14c-2 1-2.5 5-2.5 5s4-.5 5-2.5"/></svg>`,
+  premium: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.2 1.6 2.7-.6 1.1 2.5 2.5 1.1-.6 2.7L22 12l-1.6 2.2.6 2.7-2.5 1.1-1.1 2.5-2.7-.6L12 22l-2.2-1.6-2.7.6-1.1-2.5-2.5-1.1.6-2.7L2 12l1.6-2.2-.6-2.7 2.5-1.1 1.1-2.5 2.7.6z"/><path d="M8.5 12.2l2.2 2.2 4.3-4.6"/></svg>`,
+  more: `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="19" cy="12" r="2.2"/></svg>`
 };
 
 function renderDesktopSidebars(){ renderLeftSidebar(); renderRightSidebar(); }
@@ -811,22 +856,30 @@ function renderLeftSidebar(){
   const items = [
     {view:'feed', label:'Inicio', icon:DS_ICONS.feed},
     {view:'explore', label:'Explorar', icon:DS_ICONS.explore},
-    {view:'oraculo', label:'Oráculo', icon:DS_ICONS.oraculo},
     {view:'notif', label:'Notificaciones', icon:DS_ICONS.notif},
+    {view:'follow', label:'Seguir', icon:DS_ICONS.follow, mapsTo:'explore'},
     {view:'chat', label:'Chat', icon:DS_ICONS.chat},
+    {view:'oraculo', label:'Oráculo', icon:DS_ICONS.oraculo},
+    {view:'history', label:'Historial', icon:DS_ICONS.history, mapsTo:'oraculo'},
+    {view:'studio', label:'Estudio de Creador', icon:DS_ICONS.studio, mapsTo:'settings'},
+    {view:'premium', label:'Premium', icon:DS_ICONS.premium},
   ];
-  if(currentUser && myChar) items.push({view:'profile', label:'Mi perfil', icon:DS_ICONS.profile, uid:currentUser.uid});
-  items.push({view:'settings', label:'Configuración', icon:DS_ICONS.settings});
+  if(currentUser && myChar) items.push({view:'profile', label:'Perfil', icon:DS_ICONS.profile, uid:currentUser.uid});
+  items.push({view:'more', label:'Más', icon:DS_ICONS.more});
 
-  const navHtml = items.map(it=>`
-    <div class="ds-nav-item ${viewMode===it.view?'active':''}" data-view="${it.view}" ${it.uid?`data-uid="${it.uid}"`:''}>
+  const navHtml = items.map(it=>{
+    const isActive = it.mapsTo ? viewMode===it.mapsTo : viewMode===it.view;
+    return `
+    <div class="ds-nav-item ${isActive?'active':''}" data-view="${it.view}" ${it.uid?`data-uid="${it.uid}"`:''}>
       ${it.icon}<span>${it.label}</span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   const accountBlock = (currentUser && myChar) ? `
     <div class="ds-account-card" id="ds-account-card">
       <img class="avatar sm" src="${avatarFor(myChar,currentUser.uid)}">
       <div class="who"><div class="n">${escapeHtml(myChar.nombre)}</div><div class="h">${handleFor(myChar,currentUser.uid)}</div></div>
+      <button class="ds-account-more" id="ds-account-more" title="Más opciones" type="button">${DS_ICONS.more}</button>
     </div>` : `<button class="drawer-login" id="ds-login-btn" style="width:100%;">Crear cuenta / Iniciar sesión</button>`;
 
   el.innerHTML = `
@@ -845,6 +898,11 @@ function renderLeftSidebar(){
       const view = it.dataset.view;
       if(view==='chat' && !(currentUser && myChar)){ requireAuth('usar el chat'); return; }
       if(view==='oraculo' && !(currentUser && myChar)){ requireAuth('usar el Oráculo'); return; }
+      if(view==='follow'){ exploreTab = 'personas'; switchView('explore'); return; }
+      if(view==='history'){ if(!requireAuth('ver tu historial con el Oráculo')) return; activeConvId = null; switchView('oraculo'); return; }
+      if(view==='studio'){ switchView('settings', null, 'usar el Estudio de Creador'); return; }
+      if(view==='premium'){ showPremiumModal(); return; }
+      if(view==='more'){ openDrawer(); return; }
       if(view==='profile'){ switchView('profile', it.dataset.uid); return; }
       switchView(view);
     };
@@ -858,8 +916,28 @@ function renderLeftSidebar(){
   };
   const accCard = document.getElementById('ds-account-card');
   if(accCard) accCard.onclick = openDrawer;
+  const accMore = document.getElementById('ds-account-more');
+  if(accMore) accMore.onclick = (e)=>{ e.stopPropagation(); openDrawer(); };
   const loginBtn = document.getElementById('ds-login-btn');
   if(loginBtn) loginBtn.onclick = ()=>switchView('settings');
+}
+
+function showPremiumModal(){
+  const existing = document.getElementById('premium-modal-backdrop');
+  if(existing){ existing.remove(); return; }
+  const backdrop = document.createElement('div');
+  backdrop.className = 'qm-backdrop';
+  backdrop.id = 'premium-modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="quote-modal" style="text-align:center;">
+      <div class="premium-modal-icon">${DS_ICONS.premium}</div>
+      <h3 style="text-align:center;">ECOS Premium</h3>
+      <p style="color:var(--ink-dim);font-size:.92rem;line-height:1.5;margin:0 0 16px;">Todavía no existe una versión Premium de ECOS. Por ahora, todo lo que hay en las sombras es gratis.</p>
+      <button class="qm-submit" id="premium-close" type="button" style="width:100%;">Entendido</button>
+    </div>`;
+  backdrop.onclick = (e)=>{ if(e.target===backdrop) backdrop.remove(); };
+  document.body.appendChild(backdrop);
+  document.getElementById('premium-close').onclick = ()=> backdrop.remove();
 }
 
 function renderRightSidebar(){
@@ -1155,6 +1233,7 @@ function renderPost(id, post){
   const likeCount = post.likes ? Object.keys(post.likes).length : 0;
   const rtCount = post.retweets ? Object.keys(post.retweets).length : 0;
   const replies = post.replies ? Object.entries(post.replies).sort((a,b)=>a[1].createdAt-b[1].createdAt) : [];
+  const isOwner = currentUser && post.uid===currentUser.uid;
   return `
   <div class="post" data-id="${id}">
     <img class="avatar" src="${avatarFor(author, post.uid)}">
@@ -1166,15 +1245,28 @@ function renderPost(id, post){
       </div>
       ${post.text ? `<p class="post-text">${linkifyTags(post.text)}</p>` : ''}
       ${post.imageUrl ? `<img class="post-image" src="${post.imageUrl}" data-full="${post.imageUrl}" loading="lazy">` : ''}
+      ${post.quoteOf ? renderQuoteBlock(post.quoteOf) : ''}
       <div class="post-actions">
         <button class="pa-btn reply-btn reply-toggle" data-id="${id}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 01-8.9 8.49 9.4 9.4 0 01-3.9-.85L3 21l1.9-5A8.5 8.5 0 1121 11.5z"/></svg>
           <span>${replies.length||''}</span>
         </button>
-        <button class="pa-btn rt-btn ${rt?'active':''}" data-id="${id}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
-          <span>${rtCount||''}</span>
-        </button>
+        <div class="rt-wrap">
+          <button class="pa-btn rt-btn ${rt?'active':''}" data-id="${id}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+            <span>${rtCount||''}</span>
+          </button>
+          <div class="rt-menu" id="rtmenu-${id}">
+            <div class="rt-menu-item rt-repost ${rt?'active-item':''}" data-id="${id}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+              <span>${rt?'Deshacer repost':'Repostear'}</span>
+            </div>
+            <div class="rt-menu-item rt-quote" data-id="${id}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 8h4v4c0 3-1.5 5-4.5 5.5"/><path d="M13 8h4v4c0 3-1.5 5-4.5 5.5"/></svg>
+              <span>Citar</span>
+            </div>
+          </div>
+        </div>
         <button class="pa-btn like-btn ${liked?'liked':''}" data-id="${id}">
           <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="${liked?'currentColor':'none'}"><path d="M12 21s-7.5-4.6-10-9.1C.5 8.4 2.4 5 6 5c2 0 3.4 1 6 3.4C14.6 6 16 5 18 5c3.6 0 5.5 3.4 4 6.9C19.5 16.4 12 21 12 21z"/></svg>
           <span>${likeCount||''}</span>
@@ -1182,6 +1274,10 @@ function renderPost(id, post){
         <button class="pa-btn share-btn" data-id="${id}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>
         </button>
+        ${isOwner ? `
+        <button class="pa-btn del-btn" data-id="${id}" title="Eliminar publicación">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+        </button>` : ''}
       </div>
       <div class="replies" id="replies-${id}" style="display:none;">
         ${replies.map(([rid,r])=>renderReply(r)).join('')}
@@ -1197,6 +1293,22 @@ function renderPost(id, post){
   </div>`;
 }
 
+function renderQuoteBlock(quoteOfId){
+  const qpost = allPosts[quoteOfId];
+  if(!qpost) return `<div class="quote-block qb-deleted">Esta publicación ya no está disponible.</div>`;
+  const qauthor = allUsers[qpost.uid] || {nombre:"Usuario desconocido"};
+  return `<div class="quote-block" data-qid="${quoteOfId}">
+    <div class="qb-head">
+      <img class="avatar xs" src="${avatarFor(qauthor, qpost.uid)}">
+      <span class="name">${escapeHtml(qauthor.nombre)}</span>
+      <span class="handle">${handleFor(qauthor, qpost.uid)}</span>
+      <span class="time">· ${timeAgo(qpost.createdAt)}</span>
+    </div>
+    ${qpost.text ? `<p class="qb-text">${linkifyTags(qpost.text)}</p>` : ''}
+    ${qpost.imageUrl ? `<img class="qb-image" src="${qpost.imageUrl}" loading="lazy">` : ''}
+  </div>`;
+}
+
 function renderReply(r){
   const author = allUsers[r.uid] || {nombre:"Usuario desconocido"};
   return `<div class="reply"><img class="avatar" src="${avatarFor(author,r.uid)}">
@@ -1207,7 +1319,25 @@ function renderReply(r){
 function attachPostHandlers(container){
   container.querySelectorAll('.name[data-uid]').forEach(el=> el.onclick=()=>switchView('profile', el.dataset.uid));
   container.querySelectorAll('.like-btn').forEach(el=> el.onclick=()=>{ if(requireAuth('dar like')) toggleLike(el.dataset.id); });
-  container.querySelectorAll('.rt-btn').forEach(el=> el.onclick=()=>{ if(requireAuth('repostear')) toggleRetweet(el.dataset.id); });
+  container.querySelectorAll('.rt-btn').forEach(el=> el.onclick=(e)=>{
+    e.stopPropagation();
+    if(!requireAuth('repostear')) return;
+    toggleRtMenu(el.dataset.id);
+  });
+  container.querySelectorAll('.rt-repost').forEach(el=> el.onclick=(e)=>{
+    e.stopPropagation();
+    closeRtMenus();
+    if(requireAuth('repostear')) toggleRetweet(el.dataset.id);
+  });
+  container.querySelectorAll('.rt-quote').forEach(el=> el.onclick=(e)=>{
+    e.stopPropagation();
+    closeRtMenus();
+    if(requireAuth('citar')) openQuoteModal(el.dataset.id);
+  });
+  container.querySelectorAll('.del-btn').forEach(el=> el.onclick=(e)=>{
+    e.stopPropagation();
+    confirmDeletePost(el.dataset.id);
+  });
   container.querySelectorAll('.share-btn').forEach(el=> el.onclick=()=>copyLink(el.dataset.id));
   container.querySelectorAll('.reply-toggle').forEach(el=> el.onclick=()=>{
     const box=document.getElementById('replies-'+el.dataset.id);
@@ -1217,6 +1347,84 @@ function attachPostHandlers(container){
   container.querySelectorAll('.reply-input').forEach(el=> el.addEventListener('keydown', e=>{ if(e.key==='Enter'){ if(requireAuth('comentar')) sendReply(el.dataset.postid); } }));
   container.querySelectorAll('.reply-login').forEach(el=> el.onclick=()=>requireAuth('comentar'));
   container.querySelectorAll('.post-image').forEach(el=> el.onclick=()=>openLightbox(el.dataset.full));
+}
+
+document.addEventListener('click', ()=> closeRtMenus());
+
+function toggleRtMenu(postId){
+  const menu = document.getElementById('rtmenu-'+postId);
+  if(!menu) return;
+  const wasOpen = menu.classList.contains('open');
+  closeRtMenus();
+  if(!wasOpen) menu.classList.add('open');
+}
+function closeRtMenus(){
+  document.querySelectorAll('.rt-menu.open').forEach(m=> m.classList.remove('open'));
+}
+
+function confirmDeletePost(postId){
+  const post = allPosts[postId];
+  if(!post || !currentUser || post.uid!==currentUser.uid) return;
+  if(!confirm('¿Eliminar esta publicación? Esta acción no se puede deshacer.')) return;
+  db.ref(`${ROOT}/posts/${postId}`).remove().catch(()=>{
+    alert('No se pudo eliminar la publicación. Probá de nuevo.');
+  });
+}
+
+/* ---------------- CITAR PUBLICACIÓN ---------------- */
+let quotingPostId = null;
+function openQuoteModal(postId){
+  if(!(currentUser && myChar)) return;
+  const qpost = allPosts[postId];
+  if(!qpost) return;
+  quotingPostId = postId;
+  closeQuoteModal();
+  const backdrop = document.createElement('div');
+  backdrop.className = 'qm-backdrop';
+  backdrop.id = 'quote-modal-backdrop';
+  backdrop.innerHTML = `
+    <div class="quote-modal">
+      <h3>Citar publicación</h3>
+      <div style="display:flex;gap:12px;">
+        <img class="avatar" src="${avatarFor(myChar, currentUser.uid)}">
+        <div style="flex:1;min-width:0;">
+          <textarea id="quote-text" placeholder="Agregá un comentario..." maxlength="280"></textarea>
+          ${renderQuoteBlock(postId)}
+        </div>
+      </div>
+      <div class="qm-foot">
+        <span class="qm-char-count" id="quote-char-count">280</span>
+        <button class="qm-cancel" id="quote-cancel" type="button">Cancelar</button>
+        <button class="qm-submit" id="quote-submit" type="button">Citar</button>
+      </div>
+    </div>`;
+  backdrop.onclick = (e)=>{ if(e.target===backdrop) closeQuoteModal(); };
+  document.body.appendChild(backdrop);
+  const ta = document.getElementById('quote-text');
+  ta.addEventListener('input', ()=>{ document.getElementById('quote-char-count').textContent = 280-ta.value.length; });
+  document.getElementById('quote-cancel').onclick = closeQuoteModal;
+  document.getElementById('quote-submit').onclick = submitQuote;
+  ta.focus();
+}
+function closeQuoteModal(){
+  const b = document.getElementById('quote-modal-backdrop');
+  if(b) b.remove();
+  quotingPostId = null;
+}
+function submitQuote(){
+  if(!quotingPostId || !currentUser) return;
+  const ta = document.getElementById('quote-text');
+  const text = ta ? ta.value.trim() : '';
+  const submitBtn = document.getElementById('quote-submit');
+  if(submitBtn) submitBtn.disabled = true;
+  const postId = db.ref(`${ROOT}/posts`).push().key;
+  const data = { uid: currentUser.uid, text, createdAt: Date.now(), likes:{}, retweets:{}, replies:{}, quoteOf: quotingPostId };
+  db.ref(`${ROOT}/posts/${postId}`).set(data).then(()=>{
+    closeQuoteModal();
+  }).catch(()=>{
+    if(submitBtn) submitBtn.disabled = false;
+    alert('No se pudo citar la publicación. Probá de nuevo.');
+  });
 }
 
 function openLightbox(url){
