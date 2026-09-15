@@ -287,6 +287,60 @@
   .fab svg{width:24px;height:24px;}
   @media (max-width:600px){ .fab{transform:translateX(calc(-50vw + 100% - 40px));right:16px;left:auto;} }
 
+  /* ---------- Layout de escritorio: 3 columnas al estilo X ---------- */
+  .shell{display:block;}
+  .dsidebar{display:none;}
+  @media (min-width:1050px){
+    body{padding-bottom:0;}
+    .shell{display:flex;justify-content:center;align-items:flex-start;gap:28px;max-width:1280px;margin:0 auto;padding:0 16px;}
+    #app{margin:0;flex:none;box-shadow:none;}
+    .dsidebar{display:flex;flex-direction:column;position:sticky;top:0;align-self:flex-start;height:100vh;padding:8px 4px;overflow-y:auto;scrollbar-width:none;}
+    .dsidebar::-webkit-scrollbar{display:none;}
+    .dsidebar-left{width:255px;justify-content:space-between;}
+    .dsidebar-right{width:340px;gap:16px;padding-top:12px;}
+    .bottomnav,.fab{display:none;}
+  }
+  @media (min-width:1300px){ .dsidebar-left{width:275px;} }
+
+  .ds-top{display:flex;flex-direction:column;gap:6px;}
+  .ds-logo{display:flex;align-items:center;gap:10px;padding:8px 14px 14px;}
+  .ds-logo svg{width:28px;height:28px;flex:none;}
+  .ds-brand{font-family:var(--font-brand);font-weight:700;font-size:1.2rem;}
+  .ds-nav-item{display:flex;align-items:center;gap:18px;padding:12px 14px;border-radius:999px;font-size:1.12rem;font-weight:600;color:var(--ink);cursor:pointer;}
+  .ds-nav-item:hover{background:var(--bg-hover);}
+  .ds-nav-item.active{font-weight:800;}
+  .ds-nav-item svg{width:24px;height:24px;flex:none;}
+  .ds-post-btn{margin:14px 6px 4px;background:var(--grad);color:#fff;border:none;border-radius:999px;padding:15px;font-weight:800;font-size:1rem;}
+  .ds-post-btn:hover{filter:brightness(1.08);}
+  .ds-bottom{display:flex;flex-direction:column;gap:8px;padding-bottom:8px;}
+  .ds-account-card{display:flex;align-items:center;gap:10px;padding:10px;border-radius:999px;cursor:pointer;}
+  .ds-account-card:hover{background:var(--bg-hover);}
+  .ds-account-card .who{min-width:0;flex:1;}
+  .ds-account-card .n{font-weight:800;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ds-account-card .h{color:var(--ink-dim);font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  .ds-search{background:#0f0a15;border:1px solid var(--border);border-radius:999px;padding:11px 16px;display:flex;align-items:center;gap:10px;}
+  .ds-search svg{width:16px;height:16px;color:var(--ink-dim);flex:none;}
+  .ds-search input{background:none;border:none;color:var(--ink);outline:none;font-size:.92rem;width:100%;}
+  .ds-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:18px;overflow:hidden;}
+  .ds-panel h4{margin:0;padding:14px 16px 6px;font-size:1.08rem;font-weight:800;}
+  .ds-trend-row{padding:9px 16px;cursor:pointer;}
+  .ds-trend-row:hover{background:var(--bg-hover);}
+  .ds-trend-row .t{font-weight:700;color:var(--purple);font-size:.9rem;}
+  .ds-trend-row .c{color:var(--ink-dim);font-size:.76rem;}
+  .ds-who-row{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;}
+  .ds-who-row:hover{background:var(--bg-hover);}
+  .ds-who-row .who{flex:1;min-width:0;}
+  .ds-who-row .n{font-weight:700;font-size:.87rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ds-who-row .h{color:var(--ink-dim);font-size:.76rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ds-panel-empty{padding:6px 16px 16px;color:var(--ink-dim);font-size:.85rem;}
+  .ds-more{display:block;padding:11px 16px;color:var(--purple);font-size:.86rem;cursor:pointer;}
+  .ds-more:hover{background:var(--bg-hover);}
+  .ds-oraculo-card{padding-bottom:16px;}
+  .ds-oraculo-card p{margin:6px 16px 10px;color:var(--ink-dim);font-size:.85rem;line-height:1.42;}
+  .ds-oraculo-card button{margin:0 16px;background:var(--grad);border:none;color:#fff;padding:8px 16px;border-radius:999px;font-weight:700;font-size:.85rem;}
+  .ds-oraculo-card button:hover{filter:brightness(1.08);}
+
   /* ---------- Pulido general de estética ---------- */
   html{scroll-behavior:smooth;}
   #app{box-shadow:0 0 80px rgba(139,92,246,0.05);}
@@ -328,7 +382,10 @@
 </style>
 </head>
 <body>
-<div id="app">
+<div class="shell">
+  <aside class="dsidebar dsidebar-left" id="dsidebar-left"></aside>
+
+  <div id="app">
 
   <!-- DRAWER -->
   <div class="drawer-backdrop" id="drawer-backdrop"></div>
@@ -390,6 +447,9 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.5a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.3z"/></svg>
     </button>
   </nav>
+  </div>
+
+  <aside class="dsidebar dsidebar-right" id="dsidebar-right"></aside>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -543,6 +603,7 @@ function attachSharedListeners(){
     if(viewMode==="explore") renderExplore();
     if(viewMode==="profile") renderProfile(viewedUid);
     if(viewMode==="notif") renderNotif();
+    renderRightSidebar();
   });
 }
 
@@ -677,6 +738,7 @@ function renderDrawer(){
     bindAccountSwitcher(d);
     document.getElementById('dw-login').onclick = ()=>{ closeDrawer(); switchView('settings'); };
   }
+  renderDesktopSidebars();
 }
 function openDrawer(){ document.getElementById('drawer').classList.add('open'); document.getElementById('drawer-backdrop').classList.add('open'); }
 function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); document.getElementById('drawer-backdrop').classList.remove('open'); }
@@ -726,6 +788,127 @@ function renderTopbar(){
 }
 function plusIcon(){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M12 5v14M5 12h14"/></svg>`; }
 
+/* ---------------- SIDEBARS DE ESCRITORIO (estilo X: 3 columnas) ---------------- */
+const DS_ICONS = {
+  feed: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11.5L12 4l8 7.5"/><path d="M6 10v9a1 1 0 001 1h4v-6h2v6h4a1 1 0 001-1v-9"/></svg>`,
+  explore: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>`,
+  oraculo: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/></svg>`,
+  notif: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>`,
+  chat: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.5a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.3z"/></svg>`,
+  profile: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>`,
+  settings: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1 1.55V21a2 2 0 01-4 0v-.09a1.7 1.7 0 00-1-1.55 1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.7 1.7 0 00.34-1.87 1.7 1.7 0 00-1.55-1H3a2 2 0 010-4h.09a1.7 1.7 0 001.55-1 1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06a1.7 1.7 0 001.87.34H9a1.7 1.7 0 001-1.55V3a2 2 0 014 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06a1.7 1.7 0 00-.34 1.87V9a1.7 1.7 0 001.55 1H21a2 2 0 010 4h-.09a1.7 1.7 0 00-1.55 1z"/></svg>`
+};
+
+function renderDesktopSidebars(){ renderLeftSidebar(); renderRightSidebar(); }
+
+function renderLeftSidebar(){
+  const el = document.getElementById('dsidebar-left');
+  if(!el) return;
+  const items = [
+    {view:'feed', label:'Inicio', icon:DS_ICONS.feed},
+    {view:'explore', label:'Explorar', icon:DS_ICONS.explore},
+    {view:'oraculo', label:'Oráculo', icon:DS_ICONS.oraculo},
+    {view:'notif', label:'Notificaciones', icon:DS_ICONS.notif},
+    {view:'chat', label:'Chat', icon:DS_ICONS.chat},
+  ];
+  if(currentUser && myChar) items.push({view:'profile', label:'Mi perfil', icon:DS_ICONS.profile, uid:currentUser.uid});
+  items.push({view:'settings', label:'Configuración', icon:DS_ICONS.settings});
+
+  const navHtml = items.map(it=>`
+    <div class="ds-nav-item ${viewMode===it.view?'active':''}" data-view="${it.view}" ${it.uid?`data-uid="${it.uid}"`:''}>
+      ${it.icon}<span>${it.label}</span>
+    </div>`).join('');
+
+  const accountBlock = (currentUser && myChar) ? `
+    <div class="ds-account-card" id="ds-account-card">
+      <img class="avatar sm" src="${avatarFor(myChar,currentUser.uid)}">
+      <div class="who"><div class="n">${escapeHtml(myChar.nombre)}</div><div class="h">${handleFor(myChar,currentUser.uid)}</div></div>
+    </div>` : `<button class="drawer-login" id="ds-login-btn" style="width:100%;">Crear cuenta / Iniciar sesión</button>`;
+
+  el.innerHTML = `
+    <div class="ds-top">
+      <div class="ds-logo">${SIGIL_SVG}<span class="ds-brand">ECOS</span></div>
+      <nav>${navHtml}</nav>
+      <button class="ds-post-btn" id="ds-post-btn">Transmitir</button>
+    </div>
+    <div class="ds-bottom">
+      ${accountSwitcherHTML()}
+      ${accountBlock}
+    </div>`;
+
+  el.querySelectorAll('.ds-nav-item').forEach(it=>{
+    it.onclick = ()=>{
+      const view = it.dataset.view;
+      if(view==='chat' && !(currentUser && myChar)){ requireAuth('usar el chat'); return; }
+      if(view==='oraculo' && !(currentUser && myChar)){ requireAuth('usar el Oráculo'); return; }
+      if(view==='profile'){ switchView('profile', it.dataset.uid); return; }
+      switchView(view);
+    };
+  });
+  bindAccountSwitcher(el);
+  const postBtn = document.getElementById('ds-post-btn');
+  if(postBtn) postBtn.onclick = ()=>{
+    if(!requireAuth('transmitir')) return;
+    switchView('feed');
+    setTimeout(()=>document.getElementById('composer-text')?.focus(), 50);
+  };
+  const accCard = document.getElementById('ds-account-card');
+  if(accCard) accCard.onclick = openDrawer;
+  const loginBtn = document.getElementById('ds-login-btn');
+  if(loginBtn) loginBtn.onclick = ()=>switchView('settings');
+}
+
+function renderRightSidebar(){
+  const el = document.getElementById('dsidebar-right');
+  if(!el) return;
+  const tags = {};
+  Object.values(allPosts).forEach(p=> (p.text.match(/#[\p{L}\p{N}_]+/gu)||[]).forEach(t=> tags[t]=(tags[t]||0)+1));
+  const tagEntries = Object.entries(tags).sort((a,b)=>b[1]-a[1]);
+  const topTags = tagEntries.slice(0,5);
+
+  const otherUsers = Object.entries(allUsers).filter(([uid])=> !currentUser || uid!==currentUser.uid);
+  const suggested = otherUsers.slice(0,4);
+
+  el.innerHTML = `
+    <div class="ds-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="text" id="ds-search-input" placeholder="Buscar en ECOS"></div>
+    <div class="ds-panel">
+      <h4>Tendencias en ECOS</h4>
+      ${topTags.length ? topTags.map(([t,c])=>`<div class="ds-trend-row" data-tag="${escapeHtml(t)}"><div class="t">${escapeHtml(t)}</div><div class="c">${c} transmisiones</div></div>`).join('') : '<div class="ds-panel-empty">Sin actividad todavía.</div>'}
+      ${tagEntries.length>5 ? `<div class="ds-more" id="ds-see-trends">Ver más</div>` : ''}
+    </div>
+    <div class="ds-panel">
+      <h4>A quién seguir</h4>
+      ${suggested.length ? suggested.map(([uid,u])=>`<div class="ds-who-row" data-uid="${uid}"><img class="avatar sm" src="${avatarFor(u,uid)}"><div class="who"><div class="n">${escapeHtml(u.nombre)}</div><div class="h">${handleFor(u,uid)}</div></div></div>`).join('') : '<div class="ds-panel-empty">Todavía no hay más gente en ECOS.</div>'}
+      ${otherUsers.length>4 ? `<div class="ds-more" id="ds-see-people">Ver más</div>` : ''}
+    </div>
+    <div class="ds-panel ds-oraculo-card">
+      <h4>El Oráculo</h4>
+      <p>Preguntale lo que quieras sobre ECOS: cómo publicar, editar tu perfil, o pedile ideas para tu próxima transmisión.</p>
+      <button id="ds-ask-oraculo">Hablar con el Oráculo</button>
+    </div>`;
+
+  const si = document.getElementById('ds-search-input');
+  if(si) si.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){
+      const val = e.target.value;
+      exploreTab = 'personas';
+      switchView('explore');
+      setTimeout(()=>{ const es=document.getElementById('explore-search'); if(es){ es.value=val; renderExplore(); } }, 30);
+    }
+  });
+  el.querySelectorAll('.ds-trend-row').forEach(r=> r.onclick=()=>{
+    const t = r.dataset.tag;
+    exploreTab = 'tendencias';
+    switchView('explore');
+    setTimeout(()=>{ const es=document.getElementById('explore-search'); if(es){ es.value=t.replace('#',''); renderExplore(); } }, 30);
+  });
+  const seeTrends = document.getElementById('ds-see-trends'); if(seeTrends) seeTrends.onclick = ()=>{ exploreTab='tendencias'; switchView('explore'); };
+  el.querySelectorAll('.ds-who-row').forEach(r=> r.onclick=()=>switchView('profile', r.dataset.uid));
+  const seePeople = document.getElementById('ds-see-people'); if(seePeople) seePeople.onclick = ()=>{ exploreTab='personas'; switchView('explore'); };
+  const askOraculo = document.getElementById('ds-ask-oraculo');
+  if(askOraculo) askOraculo.onclick = ()=>{ if(!requireAuth('usar el Oráculo')) return; switchView('oraculo'); };
+}
+
 /* ---------------- ROUTER ---------------- */
 let exploreTab = 'personas';
 document.querySelectorAll('.bottomnav .nav-btn').forEach(el=> el.onclick=()=>{
@@ -748,6 +931,7 @@ function switchView(view, param, settingsMsg){
   viewMode = view;
   closeDrawer();
   document.querySelectorAll('.bottomnav .nav-btn').forEach(el=>el.classList.toggle('active', el.dataset.view===view));
+  renderLeftSidebar();
   hideAllViews();
   document.getElementById('view-'+view).style.display='block';
   window.scrollTo(0,0);
