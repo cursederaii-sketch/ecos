@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, shrink-to-fit=no">
 <title>ECOS — Red Social</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -23,15 +23,15 @@
     --font-brand:'Cinzel',serif;
   }
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
+  html,body{margin:0;padding:0;width:100%;max-width:100%;overflow-x:hidden;}
   body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);min-height:100vh;padding-bottom:64px;}
   a{color:inherit;text-decoration:none;}
   button{font-family:inherit;cursor:pointer;background:none;color:inherit;}
-  input,textarea,select{font-family:inherit;}
+  input,textarea,select{font-family:inherit;max-width:100%;}
   ::selection{background:rgba(139,92,246,0.35);}
   svg{display:block;}
 
-  #app{max-width:600px;margin:0 auto;min-height:100vh;border-left:1px solid var(--border);border-right:1px solid var(--border);position:relative;}
+  #app{width:100%;max-width:600px;margin:0 auto;min-height:100vh;border-left:1px solid var(--border);border-right:1px solid var(--border);position:relative;overflow-x:hidden;}
 
   /* ---------- TOPBAR ---------- */
   .topbar{position:sticky;top:0;z-index:15;background:rgba(5,3,8,0.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);}
